@@ -98,6 +98,38 @@
       text-transform: uppercase;
       transition: 0.25s;
       display: none;
+      opacity: 0;
+    }
+
+    .btn.show {
+      display: inline-block;
+      animation: fadeIn 1s ease-in forwards;
+    }
+
+    .btn.hide {
+      animation: fadeOut 0.5s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
     }
 
     .btn:hover {
@@ -196,15 +228,20 @@
         idx++;
         setTimeout(typeWriter, 33);
       } else {
-        // Show the button after typing is complete
-        document.getElementById("accessBtn").style.display = "inline-block";
+        // Show the button after typing is complete with smooth animation
+        document.getElementById("accessBtn").classList.add("show");
       }
     }
     typeWriter();
 
     /* REDIRECT */
     document.getElementById("accessBtn").onclick = () => {
+      const btn = document.getElementById("accessBtn");
       const log = document.getElementById("logLine");
+      
+      // Hide button with animation
+      btn.classList.add("hide");
+      
       let dots = 0;
 
       const interval = setInterval(() => {
