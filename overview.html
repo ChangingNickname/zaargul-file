@@ -266,8 +266,8 @@
       ">> БИОМЕТРИЧЕСКОЕ ДЕЛО ГОТОВО К ПРОСМОТРУ."
     ];
 
-    const typingSpeed = 28;
-    const linePause = 350;
+    const typingSpeed = 15;
+    const linePause = 200;
 
     /* ---------- ОБЗОР: АНИМАЦИЯ ПЕЧАТИ ---------- */
     const overviewBody = document.getElementById("overview-body");
@@ -375,7 +375,10 @@
           viewsInner.style.transform = "translateY(0)";
           break;
         case "biometrics":
-          viewsInner.style.transform = "translateY(-100%)";
+          // БЫЛО: viewsInner.style.transform = "translateY(-100%)";
+          viewsInner.style.transform = "translateY(-50%)";
+          setTimeout(startBiometricsTyping, 620);
+          break;
           // Запустить печать после завершения слайда
           setTimeout(startBiometricsTyping, 620);
           break;
