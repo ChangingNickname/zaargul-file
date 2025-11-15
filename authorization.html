@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Necron Access Terminal</title>
+
+  <!-- Matrix-style mono font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: "Share Tech Mono", monospace;
+      color: #00ff66;
+    }
+
+    /* Matrix rain canvas */
+    #matrixCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      background: #000;
+    }
+
+    /* Dark overlay so text is readable */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(0, 50, 0, 0.2), rgba(0, 0, 0, 0.9));
+      z-index: 1;
+    }
+
+    /* Centered terminal window */
+    .terminal {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(90vw, 800px);
+      padding: 24px 28px;
+      border: 2px solid #00ff66;
+      box-shadow: 0 0 25px rgba(0, 255, 100, 0.7);
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2;
+    }
+
+    .terminal-header {
+      font-size: 0.9rem;
+      color: #33ff99;
+      margin-bottom: 8px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .terminal-body {
+      font-size: 1rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      min-height: 140px;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      background: #00ff66;
+      margin-left: 4px;
+      animation: blink 0.8s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      position: relative;
+      padding: 10px 22px;
+      border: 2px solid #00ff66;
+      background: transparent;
+      color: #00ff66;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.8rem;
+      cursor: pointer;
+      overflow: hidden;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+
+    .btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(0, 255, 150, 0.5),
+        transparent
+      );
+      transition: left 0.35s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:hover {
+      background: rgba(0, 255, 100, 0.1);
+      box-shadow: 0 0 15px rgba(0, 255, 100, 0.8);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    /* Small “accessing file” log text */
+    .log-line {
+      color: #66ffcc;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="matrixCanvas"></canvas>
+  <div class="overlay"></div>
+
+  <div class="terminal">
+    <div class="terminal-header">
+      >> NECRONTYR CRYPTEK ARCHIVE : ACCESS NODE [ARAH'NEZA]
+    </div>
+
+    <div class="terminal-body" id="terminalText">
+      <!-- text will be typed here -->
+      <span class="cursor" id="cursor"></span>
+    </div>
+
+    <div class="log-line" id="logLine"></div>
+
+    <div class="controls">
+      <button class="btn" id="accessBtn">SHOW IDENTIFICATION</button>
+    </div>
+  </div>
+
+  <script>
+    /* =========== MATRIX RAIN BACKGROUND =========== */
+    const canvas = document.getElementById("matrixCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const symbols = "アイウエオカキクケコサシスセソ0123456789ネクロンҨҖӜЖ☥";
+    const fontSize = 16;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array.from({ length: columns }, () => Math.random() * canvas.height);
+
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#00ff66";
+      ctx.font = fontSize + "px Share Tech Mono";
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = symbols.charAt(Math.floor(Math.random() * symbols.length));
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+        ctx.fillText(text, x, y);
+
+        if (y > canvas.height && Math.random() > 0.965) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+
+      requestAnimationFrame(drawMatrix);
+    }
+    drawMatrix();
+
+    /* =========== TYPEWRITER IDENTIFICATION TEXT =========== */
+    const terminalTextEl = document.getElementById("terminalText");
+    const cursorEl = document.getElementById("cursor");
+
+    const message = [
+      "INITIALIZING NECRONTYR DATA-VAULT...",
+      "LINK ESTABLISHED: CRYPTEK ACCESS NODE [ARAH'NEZA]",
+      "",
+      "STATUS: LOCKED",
+      "QUERY: IDENTIFICATION REQUIRED.",
+      "",
+      "INSTRUCTION: PRESS [SHOW IDENTIFICATION] TO PROCEED."
+    ].join("\n");
+
+    let index = 0;
+    const typingSpeed = 35; // ms per character
+
+    function typeWriter() {
+      if (index <= message.length) {
+        terminalTextEl.innerHTML = message.slice(0, index)
+          .replace(/\n/g, "<br>");
+        terminalTextEl.appendChild(cursorEl);
+        index++;
+        setTimeout(typeWriter, typingSpeed);
+      }
+    }
+    typeWriter();
+
+    /* =========== BUTTON → ACCESSING FILE → REDIRECT =========== */
+    const accessBtn = document.getElementById("accessBtn");
+    const logLine = document.getElementById("logLine");
+
+    accessBtn.addEventListener("click", () => {
+      if (accessBtn.disabled) return;
+
+      accessBtn.disabled = true;
+
+      // “Accessing file...” animation
+      let dots = 0;
+      logLine.textContent = "[PROCESS] ACCESSING FILE";
+      const interval = setInterval(() => {
+        dots = (dots + 1) % 4;
+        logLine.textContent = "[PROCESS] ACCESSING FILE" + ".".repeat(dots);
+      }, 400);
+
+      // After short delay, go to next page
+      setTimeout(() => {
+        clearInterval(interval);
+        logLine.textContent = "[OK] LINK ESTABLISHED. TRANSFERRING…";
+
+        /* ********************************************
+         * CHANGE THIS URL TO WHERE YOU WANT TO GO NEXT
+         * e.g. another HTML page or a Google Site page
+         ******************************************** */
+        const nextUrl = "https://example.com/your-next-page.html";
+        window.location.href = nextUrl;
+      }, 2600);
+    });
+  </script>
+</body>
+</html>
