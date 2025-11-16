@@ -440,11 +440,11 @@
       ">> ЛИЧНОЕ ДЕЛО: ЗАГРУЗКА ЗАВЕРШЕНА."
     ];
 
-    // const typingSpeed = 15;
-    // const linePause = 200;
+    const typingSpeed = 15;
+    const linePause = 200;
 
-    const typingSpeed = 1;
-    const linePause = 2;
+    // const typingSpeed = 1;
+    // const linePause = 2;
 
     /* ---------- ОБЗОР: АНИМАЦИЯ ПЕЧАТИ ---------- */
     const overviewBody = document.getElementById("overview-body");
@@ -719,7 +719,7 @@
           "   ПЕРВЫЙ ПРОТОКОЛ: ВЫПОЛНЕНИЕ ПРИКАЗА РЕГЕНТА. ВЫПОЛНЕНО.<br>" +
           `      ПРИКАЗ РЕГЕНТА: ${currentOrder}<br><br>` +
           "   ВТОРОЙ ПРОТОКОЛ: УНИЧТОЖЕНИЕ НЕКРОН-ЕДИНИЦ.";
-      }, (t += 4000));
+      }, (t += 3500));
 
       // 6) зачёркиваем ПЕРВЫЙ ПРОТОКОЛ и ПРИКАЗ
       scheduleProtocols(() => {
