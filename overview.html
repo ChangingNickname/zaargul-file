@@ -377,6 +377,10 @@
   <canvas id="matrixCanvas"></canvas>
   <audio id="text-sound" src="text-sound.mp3" preload="auto"></audio>
   <audio id="protocol-sound" src="protocol-sound.mp3" preload="auto"></audio>
+  <audio id="button-sound" src="button-sound.mp3" preload="auto"></audio>
+  <audio id="image-sound" src="image-sound.mp3" preload="auto"></audio>
+
+
   <div id="init-overlay" class="init-overlay">
     <div class="init-message">
       >> НАЖМИТЕ ЛЮБУЮ КЛАВИШУ ИЛИ КНОПКУ МЫШИ ДЛЯ ИНИЦИАЛИЗАЦИИ АРХИВА...
@@ -744,6 +748,32 @@
       } catch (e) {}
     }
 
+        /* ---------- ЗВУК ДЛЯ КНОПОК ---------- */
+    function playButtonSound() {
+      const btnSound = document.getElementById("button-sound");
+      if (!btnSound) return;
+
+      btnSound.volume = 0.3; // adjust volume here
+      try {
+        btnSound.currentTime = 0;
+        btnSound.play().catch(() => {});
+      } catch (e) {}
+    }
+
+        /* ---------- ЗВУК ДЛЯ ИЗОБРАЖЕНИЯ ---------- */
+    function playImageSound() {
+      const imgSound = document.getElementById("image-sound");
+      if (!imgSound) return;
+
+      imgSound.volume = 0.35; // adjust volume here
+      try {
+        imgSound.currentTime = 0;
+        imgSound.play().catch(() => {});
+      } catch (e) {}
+    }
+
+
+
 
     /* ---------- ГЛОБАЛЬНАЯ СИСТЕМА УПРАВЛЕНИЯ ТАЙМЕРАМИ ---------- */
     let allTypingTimers = [];
@@ -1016,7 +1046,7 @@
           "   ПЕРВЫЙ ПРОТОКОЛ: ВЫПОЛНЕНИЕ ПРИКАЗА РЕГЕНТА.<br>" +
           `      ПРИКАЗ РЕГЕНТА: ${currentOrder}<br><br>` +
           "   ВТОРОЙ ПРОТОКОЛ: УНИЧТОЖЕНИЕ НЕКРОН-ЕДИНИЦ.";
-        playTextSound();
+        playButtonSound();
       }, (t += 1200));
 
       scheduleProtocols(() => {
@@ -1024,7 +1054,7 @@
           "   ПЕРВЫЙ ПРОТОКОЛ: ВЫПОЛНЕНИЕ ПРИКАЗА РЕГЕНТА. ВЫПОЛНЕНО.<br>" +
           `      ПРИКАЗ РЕГЕНТА: ${currentOrder}<br><br>` +
           "   ВТОРОЙ ПРОТОКОЛ: УНИЧТОЖЕНИЕ НЕКРОН-ЕДИНИЦ.";
-        playTextSound();
+        playButtonSound();
       }, (t += 3500));
 
       scheduleProtocols(() => {
@@ -1032,13 +1062,13 @@
           `   <span class="protocol-strike">ПЕРВЫЙ ПРОТОКОЛ: ВЫПОЛНЕНИЕ ПРИКАЗА РЕГЕНТА. ВЫПОЛНЕНО.</span><br>` +
           `   <span class="protocol-strike">   ПРИКАЗ РЕГЕНТА: ${currentOrder}</span><br><br>` +
           "   ВТОРОЙ ПРОТОКОЛ: УНИЧТОЖЕНИЕ НЕКРОН-ЕДИНИЦ.";
-        playTextSound();
+        playButtonSound();
       }, (t += 1500));
 
       scheduleProtocols(() => {
         dyn.innerHTML =
           "   ПЕРВЫЙ ПРОТОКОЛ: УНИЧТОЖЕНИЕ НЕКРОН-ЕДИНИЦ.";
-        playTextSound();
+        playButtonSound();
       }, (t += 1500));
 
       scheduleProtocols(() => {
@@ -1171,7 +1201,9 @@
 
     function showAttachmentImage() {
       if (!attachmentImageWrapper) return;
+      playImageSound();
       attachmentImageWrapper.classList.add("show");
+      
     }
 
     function startAttachmentDetails() {
@@ -1314,6 +1346,8 @@
     document.addEventListener("click", (e) => {
       const btn = e.target.closest(".nav-btn");
       if (!btn) return;
+
+      playButtonSound();
 
       const target = btn.getAttribute("data-target");
 
