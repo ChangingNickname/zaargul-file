@@ -283,6 +283,23 @@
     .nav-btn.hidden {
       display: none;
     }
+    /* Специальное поведение только для блока вложения */
+    #attachment-body {
+      display: flex;
+      flex-direction: column;
+      white-space: normal; /* перекрываем .terminal-body */
+    }
+
+    /* А вот здесь уже сохраняем переносы строк для текста */
+    #attachment-text {
+      white-space: pre-wrap;
+    }
+
+    /* Картинка – маленький контролируемый отступ от текста */
+    .attachment-image-wrapper {
+      margin-top: 8px;
+    }
+
 
   </style>
 </head>
