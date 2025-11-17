@@ -383,7 +383,7 @@
 
   <div id="init-overlay" class="init-overlay">
     <div class="init-message">
-      >> НАЖМИТЕ ЛЮБУЮ КЛАВИШУ ИЛИ КНОПКУ МЫШИ ДЛЯ ИНИЦИАЛИЗАЦИИ АРХИВА...
+      >> НАЖМИТЕ ЛЮБУЮ КЛАВИШУ ИЛИ КНОПКУ ДЛЯ ИНИЦИАЛИЗАЦИИ АРХИВА...
     </div>
   </div>
   
@@ -703,7 +703,7 @@
     // const typingSpeed = 15;
     // const linePause = 200;
 
-    const typingSpeed = 7;
+    const typingSpeed = 9;
     const linePause = 100;
 
         /* ---------- ЗВУК ПЕЧАТИ ---------- */
@@ -1126,7 +1126,11 @@
       dossierBody.innerHTML = "";
       dossierBody.appendChild(document.createTextNode(dossierCurrentText));
       dossierBody.appendChild(dossierCursor);
+
+      // 🔥 AUTO-SCROLL TO BOTTOM
+      dossierBody.scrollTop = dossierBody.scrollHeight;
     }
+
 
     /* ---------- НОВОЕ: ВИЗУАЛЬНОЕ ВЛОЖЕНИЕ (ТЕКСТ + КАРТИНКА) ---------- */
     const attachmentBody = document.getElementById("attachment-body");
