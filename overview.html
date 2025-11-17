@@ -63,7 +63,7 @@
     }
 
     .views.expanded {
-      height: 500px;
+      /* height: 700px; */ /* Убрали фиксированную высоту - будет подстраиваться под содержимое */
     }
 
     .views-inner {
@@ -107,6 +107,14 @@
     #dossier-body {               /* <<< НОВОЕ */
       max-height: 400px;          /* ограничиваем высоту */
       overflow-y: auto;           /* внутренний скролл только здесь */
+    }
+
+    #attachmentCanvas {
+      width: 100%;
+      max-width: 800px;
+      border: 1px solid #00aa44;
+      margin-top: 20px;
+      box-shadow: 0 0 12px #00ff66;
     }
 
     .cursor {
@@ -275,6 +283,9 @@
               <button class="nav-btn" data-target="dossier">
                 Личное Дело
               </button>
+              <button class="nav-btn" data-target="attachments">
+                Приложения
+              </button>
             </div>
           </section>
 
@@ -306,6 +317,19 @@
               </button>
             </div>
             <div id="dossier-body" class="terminal-body"></div>
+          </section>
+
+          <!-- ====== ЭКРАН ПРИЛОЖЕНИЙ ====== -->
+          <section class="view" id="view-attachments">
+            <div class="buttons-row">
+              <button class="nav-btn back" data-target="overview">
+                &laquo; ВЕРНУТЬСЯ К ОБЗОРУ ФАЙЛА
+              </button>
+            </div>
+            <div id="attachments-body" class="terminal-body"></div>
+            <div id="apps-image-container"
+                 style="width:100%; overflow:hidden; margin-top:20px;"></div>
+            <canvas id="attachmentCanvas" width="600" height="400" style="display:none;"></canvas>
           </section>
         </div>
       </div>
@@ -494,11 +518,19 @@
       ">> ЛИЧНОЕ ДЕЛО: ЗАГРУЗКА ЗАВЕРШЕНА."
     ];
 
-    const typingSpeed = 15;
-    const linePause = 200;
+    /* ---------- ТЕКСТ ПРИЛОЖЕНИЙ ---------- */
+    const attachmentLines = [
+      ">> ДОСТУП К ПОДРАЗДЕЛУ: ПРИЛОЖЕНИЯ...",
+      ">> ПОДТВЕРЖДЕНИЕ УРОВНЯ ДОПУСКА: ОДОБРЕНО.",
+      ">> ЗАГРУЗКА ПРИЛОЖЕНИЯ-1...",
+      ""
+    ];
 
-    // const typingSpeed = 1;
-    // const linePause = 2;
+    // const typingSpeed = 15;
+    // const linePause = 200;
+
+    const typingSpeed = 1;
+    const linePause = 2;
 
     /* ---------- ОБЗОР: АНИМАЦИЯ ПЕЧАТИ ---------- */
     const overviewBody = document.getElementById("overview-body");
@@ -846,6 +878,143 @@
       dossierBody.appendChild(dossierCursor);
     }
 
+    /* ---------- ПРИЛОЖЕНИЯ ---------- */
+    const attachmentsBody = document.getElementById("attachments-body");
+    const attachmentsCursor = document.createElement("span");
+    attachmentsCursor.className = "cursor";
+
+    let attLineIndex = 0;
+    let attCharIndex = 0;
+    let attCurrentText = "";
+    let attachmentsStarted = false;
+
+    function startAttachmentsTyping() {
+      if (attachmentsStarted) return;
+      attachmentsStarted = true;
+
+      attachmentsBody.innerHTML = "";
+      attLineIndex = 0;
+      attCharIndex = 0;
+      attCurrentText = "";
+      attachmentsBody.appendChild(attachmentsCursor);
+
+      typeAttachments();
+    }
+
+    function typeAttachments() {
+      const line = attachmentLines[attLineIndex];
+
+      if (attCharIndex < line.length) {
+        attCurrentText += line[attCharIndex];
+        renderAttachments();
+        attCharIndex++;
+        setTimeout(typeAttachments, typingSpeed);
+      } else {
+        attCurrentText += "\n";
+        renderAttachments();
+        attLineIndex++;
+        attCharIndex = 0;
+
+        if (attLineIndex < attachmentLines.length) {
+          setTimeout(typeAttachments, linePause);
+        } else {
+          setTimeout(startImageReveal, 600);
+        }
+      }
+    }
+
+    function renderAttachments() {
+      attachmentsBody.innerHTML = "";
+      attachmentsBody.appendChild(document.createTextNode(attCurrentText));
+      attachmentsBody.appendChild(attachmentsCursor);
+    } 
+
+    function startImageReveal() {
+      const cont = document.getElementById("apps-image-container");
+      if (!cont) return;
+
+      // Очистить прошлое содержимое
+      cont.innerHTML = "";
+
+      const img = new Image();
+      img.src = "attachment1.jpg";   // <-- правильное имя файла
+
+      img.onload = function () {
+        const containerWidth = cont.clientWidth || 800;
+
+        // Масштабируем изображение по ширине контейнера
+        const scale = containerWidth / img.naturalWidth;
+        const finalHeight = img.naturalHeight * scale;
+
+        // Подстраиваем высоту контейнера под картинку (минимум 500)
+        const viewsContainer = document.querySelector(".views");
+        if (viewsContainer) {
+          viewsContainer.style.height = Math.max(500, finalHeight + 200) + "px";
+        }
+
+        // Видимый canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = containerWidth;
+        canvas.height = finalHeight;
+        cont.appendChild(canvas);
+        const ctx = canvas.getContext("2d");
+
+        // Offscreen-canvas, на который один раз рисуем масштабированное изображение
+        const off = document.createElement("canvas");
+        off.width = containerWidth;
+        off.height = finalHeight;
+        const offCtx = off.getContext("2d");
+
+        // Полностью масштабированная картинка
+        offCtx.drawImage(img, 0, 0, containerWidth, finalHeight);
+
+        let revealed = 0;                 // сколько пикселей по высоте уже "открыто"
+        const speed = 4;                  // скорость раскрытия (px за кадр)
+        const glyphStepX = 16;            // расстояние между столбцами символов
+
+        function frame() {
+          const next = Math.min(revealed + speed, finalHeight);
+
+          // Копируем сверху до next всё изображение с offscreen-canvas
+          ctx.drawImage(off, 0, 0, canvas.width, next, 0, 0, canvas.width, next);
+
+          // Поверх – "матрица" только в новой полоске
+          ctx.save();
+          ctx.globalAlpha = 0.45;        // <= ВАЖНО: картинка под символами видна
+          ctx.fillStyle = "#00ff66";
+          ctx.font = "14px Consolas";
+
+          for (let x = 0; x < canvas.width; x += glyphStepX) {
+            if (Math.random() < 0.25) {
+              const y = revealed + Math.random() * (next - revealed);
+              ctx.fillText(
+                String.fromCharCode(0x30A0 + (Math.random() * 96)),
+                x,
+                y
+              );
+            }
+          }
+
+          ctx.restore();
+
+          revealed = next;
+          if (revealed < finalHeight) {
+            requestAnimationFrame(frame);
+          } else {
+            // OPTIONAL: после полной загрузки можно чуть "почистить" картинку
+            // ctx.drawImage(off, 0, 0); // раскомментируй, если хочешь убрать символы
+          }
+        }
+
+        frame();
+      };
+
+      img.onerror = function () {
+        console.error("Failed to load image: attachment1.jpg");
+        cont.innerHTML = "<p style='color:#ff3333;'>ERROR: Failed to load attachment1.jpg</p>";
+      };
+    }
+
     /* ---------- ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ ---------- */
     const viewsInner = document.getElementById("views-inner");
     const viewsContainer = document.querySelector(".views");
@@ -865,10 +1034,15 @@
           biometricsBody.innerHTML = "";
           protocolsBody.innerHTML = "";
           dossierBody.innerHTML = "";
+          attachmentsBody.innerHTML = "";
+
+          const canvas = document.getElementById("attachmentCanvas");
+          if (canvas) canvas.style.display = "none";
 
           biometricsStarted = false;
           protocolsStarted = false;
           dossierStarted = false;
+          attachmentsStarted = false;
 
           bioLineIndex = bioCharIndex = 0;
           bioCurrentText = "";
@@ -878,10 +1052,14 @@
 
           dossierLineIndex = dossierCharIndex = 0;
           dossierCurrentText = "";
+
+          attLineIndex = attCharIndex = 0;
+          attCurrentText = "";
           break;
 
         case "biometrics":
           viewsContainer.classList.add("expanded");
+          viewsContainer.style.height = "500px"; // Стандартная высота
           setTimeout(() => {
             viewsInner.style.transform = "translateY(-500px)";
           }, 50);
@@ -890,6 +1068,7 @@
 
         case "protocols":
           viewsContainer.classList.add("expanded");
+          viewsContainer.style.height = "500px"; // Стандартная высота
           setTimeout(() => {
             viewsInner.style.transform = "translateY(-1000px)";
           }, 50);
@@ -898,10 +1077,20 @@
 
         case "dossier":
           viewsContainer.classList.add("expanded");
+          viewsContainer.style.height = "500px"; // Стандартная высота
           setTimeout(() => {
             viewsInner.style.transform = "translateY(-1500px)";
           }, 50);
           setTimeout(startDossierTyping, 670);
+          break;
+
+        case "attachments":
+          viewsContainer.classList.add("expanded");
+          // Высота будет установлена в startImageReveal
+          setTimeout(() => {
+            viewsInner.style.transform = "translateY(-2000px)";
+          }, 50);
+          setTimeout(startAttachmentsTyping, 670);
           break;
 
         default:
@@ -918,7 +1107,7 @@
       if (!target) return;
 
       e.preventDefault();
-      if (["biometrics", "overview", "protocols", "dossier"].includes(target)) {
+      if (["biometrics", "overview", "protocols", "dossier", "attachments"].includes(target)) {
         goToView(target);
       } else {
         goToView(target);
