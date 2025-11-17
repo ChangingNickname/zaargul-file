@@ -30,6 +30,7 @@
       text-align: center;
       opacity: 1;
       transition: opacity 0.4s ease;
+      cursor: pointer; /* визуальный намёк, что можно нажимать */
     }
 
     .init-overlay.hide {
@@ -42,6 +43,25 @@
       border: 1px solid #00aa44;
       box-shadow: 0 0 18px #00aa44;
       background: rgba(0, 0, 0, 0.9);
+    }
+
+    /* <<< Новый "курсор" для init-message */
+    .init-cursor {
+      display: inline-block;
+      width: 10px;
+      height: 18px;
+      margin-left: 8px;
+      background-color: #00ff66;
+      box-shadow: 0 0 10px #00ff66;
+      transform-origin: center;
+      animation: initPress 0.45s infinite;
+    }
+
+    @keyframes initPress {
+      0%   { transform: translateY(0);    opacity: 1;   }
+      30%  { transform: translateY(3px) scaleY(0.9); opacity: 0.75; } /* “нажал кнопку” */
+      60%  { transform: translateY(0);    opacity: 1;   }             /* отпустил */
+      100% { transform: translateY(3px) scaleY(0.9); opacity: 0.75; } /* опять жмёт */
     }
 
 
@@ -384,6 +404,7 @@
   <div id="init-overlay" class="init-overlay">
     <div class="init-message">
       >> НАЖМИТЕ ЛЮБУЮ КЛАВИШУ ИЛИ КНОПКУ ДЛЯ ИНИЦИАЛИЗАЦИИ АРХИВА...
+      <span class="init-cursor"></span>
     </div>
   </div>
   
